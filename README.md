@@ -5,7 +5,7 @@
 
 ## Overview
 
-.This project is a **PDF Downloader** that reads links from an Excel file (using `pandas`) and downloads associated PDF documents asynchronously. The main script handles Excel reading, downloading, timeout handling, and logging.
+This project is a **PDF Downloader** that reads links from an Excel file (using `pandas`) and downloads associated PDF documents asynchronously. The main script handles Excel reading, downloading, timeout handling, and logging.
 
 ### Main File
 
