@@ -1,5 +1,7 @@
 [![Python CI](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/ci.yml/badge.svg)](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/ci.yml)
 
+Note that the Badge is failing on purpose.
+
 
 # PDF Downloader & Unit Tests
 
