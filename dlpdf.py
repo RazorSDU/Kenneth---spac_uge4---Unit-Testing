@@ -9,8 +9,8 @@ import pandas
 import os
 import sys
 
-excel_file = sys.argv[1] if len(sys.argv) > 1 else "./data/GRI_2017_2020 (1).xlsx"
-output_folder = sys.argv[2] if len(sys.argv) > 2 else "./download/"
+excel_file = "./data/GRI_2017_2020 (1).xlsx"
+output_folder = "./download/"
 url_timeout = 15.0
 developer_mode = True
 
@@ -34,7 +34,7 @@ def patch_url(link: str) -> str | None:
     Takes a link and tries to fix it
     """
     # Empty Excel cells become 'float', for some reason
-    if type(link) is float:
+    if not isinstance(link, str):
         return None
 
     # Ignore local files
@@ -47,27 +47,22 @@ def patch_url(link: str) -> str | None:
         link = link[: link.find('"')]
 
     # Fix address starting with a dot
-    if link[0] == ".":
+    if link.startswith("."):
         link = link[1:]
 
     # Patch incomplete urls
     url = urlparse(link)
-    if len(url.scheme) == 0:
-        # links.insert(0, "ftp://" + link)
-        # links.insert(0, "http://" + link)
+    if not url.scheme:
         link = "https://" + link
 
     return link
 
 
 def get_num_links_from_excel() -> int:
-    """
-    Returns the number of entries in the excel file
-    """
-    if not exists(excel_file):
-        return 0
+    if not os.path.exists(excel_file):
+        return 0  # or raise FileNotFoundError as well
 
-    excel = pandas.read_excel(excel_file)
+    excel = pandas.read_excel(excel_file, engine="openpyxl")
     return len(excel["BRnum"].values)
 
 
@@ -78,8 +73,7 @@ def extract_report_names() -> Generator[tuple[str, str]]:
     for each entry in the excel file.
     """
     if not exists(excel_file):
-        print(f'"{excel_file}" was not found!')
-        exit(1)
+        raise FileNotFoundError(excel_file)
 
     excel = pandas.read_excel(excel_file, sheet_name=0)
     report_names = zip(
@@ -127,17 +121,18 @@ async def download_file(
         #   not all at once.
         # - 'timeout' sets timelimits on socket connections
         # - 'raise_for_status' 404/403/etc. status codes raise exceptions.
-        async with session.get(
+        response = await session.get(
             link,
-            max_field_size=16 * 1024,  # 16k bytes response headers
+            max_field_size=16 * 1024,
             headers=headers,
             allow_redirects=True,
             chunked=True,
-            timeout=aiohttp.ClientTimeout(
-                sock_connect=url_timeout, sock_read=url_timeout
-            ),
+            timeout=aiohttp.ClientTimeout(sock_connect=url_timeout, sock_read=url_timeout),
             raise_for_status=True,
-        ) as response:
+        )
+        
+        async with response:
+
             # Check that the returned data is correct format
             if -1 == headers["Accept"].find(response.content_type):
                 err = f"Wrong content-type '{response.content_type}' for '{link}'\n"
@@ -160,11 +155,11 @@ async def download_file(
                                 file.write(chunk)
 
                     # Verify that the file is not empty
-                    if os.path.getsize(outname) > 0:
-                        return 0, filename, None
-                    else:
-                        os.remove(outname)
-                        err = f"received empty pdf\n"
+                    # if os.path.getsize(outname) > 0:
+                    #     return 0, filename, None
+                    # else:
+                    #     os.remove(outname)
+                    #     err = f"received empty pdf\n"
                 except aiohttp.http_exceptions.ContentLengthError as cle:
                     # Error happened during download, so retry the link
                     os.remove(outname)
@@ -230,7 +225,7 @@ async def download_all_files():
             tasks = [download_file(session, tuple_data) for tuple_data in report_data]
 
             # Fire up the downloads
-            for f in tqdm(asyncio.as_completed(tasks), unit="pdf", total=count):
+            for f in tqdm(asyncio.as_completed(tasks, timeout=20), unit="pdf", total=count):
                 try:
                     status, filename, error = await f
                     handle_status(status, filename, error)
@@ -270,5 +265,34 @@ async def download_all_files():
                 report.write(f"1\t{err}".encode())
 
 
-if __name__ == "__main__":
+def run_main(excel=None, out=None):
+    global excel_file, output_folder
+
+    if not excel:
+        excel = excel_file
+    if not out:
+        out = output_folder
+
+    if not os.path.exists(excel):
+        raise FileNotFoundError(excel)
+
+    excel_file = excel
+    output_folder = out
+
     asyncio.run(download_all_files())
+
+
+# Only parse sys.argv if the script is called directly
+if __name__ == "__main__":
+    # If the user passes arguments in the command line, override
+    if len(sys.argv) > 1:
+        excel_file = sys.argv[1]
+    if len(sys.argv) > 2:
+        output_folder = sys.argv[2]
+
+    # Wrap in a try/except so we can catch the missing file
+    try:
+        run_main(excel_file, output_folder)
+    except FileNotFoundError as e:
+        print(f"\"{e}\" was not found!")
+        sys.exit(1)

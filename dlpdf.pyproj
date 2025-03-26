@@ -12,6 +12,8 @@
     <Name>dlpdf</Name>
     <RootNamespace>dlpdf</RootNamespace>
     <InterpreterId>MSBuild|.venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <SuppressEnvironmentCreationPrompt>True</SuppressEnvironmentCreationPrompt>
+    <TestFramework>Pytest</TestFramework>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +24,27 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Data\download_files.py" />
     <Compile Include="dlpdf.py" />
+    <Compile Include="dlpdf_utils.py" />
+    <Compile Include="tests\test_dlpdf_script.py" />
+    <Compile Include="tests\test_download_file.py" />
+    <Compile Include="tests\test_excel_extraction.py" />
+    <Compile Include="tests\test_original_requirements.py" />
+    <Compile Include="tests\test_patch_url.py" />
+    <Compile Include="tests\__init__.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Data\GRI_2017_2020 %281%29.xlsx" />
+    <Content Include="Data\Metadata2006_2016.xlsx" />
+    <Content Include="README.md" />
+    <Content Include="report.csv" />
+    <Content Include="requirements.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Data\" />
+    <Folder Include="tests\" />
   </ItemGroup>
   <ItemGroup>
     <Interpreter Include=".venv\">
