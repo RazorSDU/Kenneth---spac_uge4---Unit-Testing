@@ -1,3 +1,6 @@
+[![Python CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/main.yml)
+
+
 # PDF Downloader & Unit Tests
 
 ## Overview
