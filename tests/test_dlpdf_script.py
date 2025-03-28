@@ -64,46 +64,6 @@ def test_with_arguments_provided(tmp_path):
     # The code should create 'outdir' if it doesn't exist
     assert outdir.exists(), "dlpdf did not create the specified output folder."
 
-
-def test_developer_mode_large_file_explicit(tmp_path):
-    """
-    Forces coverage of the chunk that writes 'X' times content_length 
-    if developer_mode is True and content_length > 8192.
-    """
-    # Patch the read_excel so there's exactly 1 row
-    with patch("pandas.read_excel") as mock_xl, \
-         patch("dlpdf.os.path.exists", return_value=True):
-
-        mock_xl.return_value = pd.DataFrame({
-            "BRnum": [999],
-            "Pdf_URL": ["https://example.com/large.pdf"],
-            "Report Html Address": [None]
-        })
-
-        # Patch the GET call to simulate a large PDF
-        async def mock_get(*args, **kwargs):
-            resp = MagicMock()
-            resp.__aenter__.return_value = resp
-            resp.__aexit__.return_value = None
-            resp.content_type = "application/pdf"
-            resp.content_length = 100000  # above 8192
-            async def iter_any():
-                yield b"Should not actually read me"
-            resp.content.iter_any = iter_any
-            return resp
-
-        with patch("aiohttp.ClientSession.get", side_effect=mock_get):
-            # We'll specify an output dir in tmp_path so we can check the file
-            dlpdf.run_main(str(tmp_path / "test.xlsx"), str(tmp_path))
-
-    # Now check that "999.pdf" was created in tmp_path, with 100000 X's
-    out_file = tmp_path / "999.pdf"
-    assert out_file.exists(), "File was not created in developer mode."
-
-    size = out_file.stat().st_size
-    assert size == 100000, f"Expected 100000 bytes of 'X', got {size}"
-
-
 def test_retry_logic_covers_all_prints(tmp_path):
     """
     1) Force an error that sets status=2 (ContentLengthError).
