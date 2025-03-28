@@ -1,11 +1,13 @@
-[![Python CI](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/ci.yml)
+[![Python CI](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/ci.yml/badge.svg)](https://github.com/RazorSDU/Kenneth---spac_uge4---Unit-Testing/actions/workflows/ci.yml)
+
+Note that the Badge is failing on purpose.
 
 
 # PDF Downloader & Unit Tests
 
 ## Overview
 
-This project is a **PDF Downloader** that reads links from an Excel file (using `pandas`) and downloads associated PDF documents asynchronously. The main script handles Excel reading, downloading, timeout handling, and logging.
+This project is a **PDF Downloader** that reads links from an Excel file (using `pandas`) and downloads associated PDF documents asynchronously. The main script handles Excel reading, downloading, timeout handling, and logging
 
 ### Main File
 
